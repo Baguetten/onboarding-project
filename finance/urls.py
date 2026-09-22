@@ -1,9 +1,11 @@
 from django.urls import include, path
+from rest_framework.authtoken.views import obtain_auth_token
 from finance import views
 
 urlpatterns = [
-    path('', views.home, name='home'), 
+    path('', views.home, name='home'),
     path('login/', views.login_view, name='login'),
+    path('create_account/', views.create_account, name='create_account'),
     path('logout/', views.logout_view, name='logout'),
     path('categories/', views.CategoryListCreateView.as_view()),  
     path('expenses/', views.ExpenseListCreateView.as_view()),  

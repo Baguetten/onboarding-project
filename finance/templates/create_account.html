@@ -1,13 +1,15 @@
 {% extends 'base.html' %}
 {% block content %}
-    <h1>Login</h1>
+    <h1>Create Account</h1>
     <form method="post">
         {% csrf_token %}
         <label>Username:</label>
         <input type="text" name="username"><br>
         <label>Password:</label>
         <input type="password" name="password"><br>
-        <button type="submit">Login</button>
+        <label>Confirm Password:</label>
+        <input type="password" name="confirm_password"><br>
+        <button type="submit">Create Account</button>
     </form>
-    <p><a href="{% url 'create_account' %}">Create Account</a></p>
+    <p><a href="{% url 'login' %}">Login</a></p>
 {% endblock %}
