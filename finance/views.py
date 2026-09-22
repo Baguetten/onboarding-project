@@ -27,8 +27,7 @@ def create_account(request):
             raise ValueError("Passwords do not match")
 
         user = User.objects.create_user(username=username, password=password)
-        token = Token.objects.create(user=user)  
-        print(token.key)
+        Token.objects.get_or_create(user=user)
         login(request, user)
         return redirect('home')
     return render(request, 'create_account.html')
@@ -39,6 +38,7 @@ def login_view(request):
         password = request.POST['password']
         user = authenticate(request, username=username, password=password)
         if user is not None:
+            Token.objects.get_or_create(user=user)
             login(request, user)
             return redirect('home')
         else:
