@@ -1,7 +1,7 @@
 from django.views import View
 from rest_framework.authtoken.models import Token
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -10,6 +10,16 @@ from finance.serializers import CategorySerializer, ExpenseSerializer, IncomeSer
 from rest_framework import generics, permissions
 from .permissions import IsOwner
 from django.contrib.auth.mixins import LoginRequiredMixin
+import requests
+
+def api_call(request, path, method='get', **kwargs):
+    token = Token.objects.get(user=request.user).key
+    return requests.request(
+        method,
+        request.build_absolute_uri(path),
+        headers={'Authorization': f'Token {token}'},
+        **kwargs,
+    )
 
 @login_required
 def home(request):
@@ -49,21 +59,34 @@ def login_view(request):
 
 class ExpenseListCreateView(LoginRequiredMixin, View):
     template_name = 'expenses.html'
-    def get(self, request):
-        expenses = Expense.objects.filter(owner=request.user)
-        categories = Category.objects.filter(owner=request.user)
-        return render(request, self.template_name, {'expenses': expenses, 'categories': categories})
-    def post(self, request):
-        serializer = ExpenseSerializer(data=request.POST, context={'request': request})
-        if serializer.is_valid():
-            serializer.save(owner=request.user)
-            return redirect('expenses')
-        return render(request, self.template_name, {
-            'expenses': Expense.objects.filter(owner=request.user),
-            'categories': Category.objects.filter(owner=request.user),
-            'errors': serializer.errors,
-        })
 
+    def get(self, request):
+        return render(request, self.template_name, self.context(request))
+
+    def post(self, request):
+        res = api_call(request, '/api/expenses/', 'post', data={
+            'amount': request.POST['amount'],
+            'category': request.POST['category'],
+            'date': request.POST['date'],
+            'description': request.POST['description'],
+        })
+        if res.status_code == 201:
+            return redirect('expenses')
+        return render(request, self.template_name, {**self.context(request), 'errors': res.json()})
+
+    def context(self, request):
+        return {
+            'expenses': api_call(request, '/api/expenses/').json(),
+            'categories': api_call(request, '/api/categories/').json(),
+        }
+
+class ExpenseDetailPageView(LoginRequiredMixin, View):
+    template_name = 'expense_detail.html'
+
+    def get(self, request, pk):
+        expense = get_object_or_404(Expense, pk=pk, owner=request.user)
+        return render(request, self.template_name, {'expense': expense})
+    
 class CategoryListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = CategorySerializer

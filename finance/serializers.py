@@ -16,9 +16,10 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class ExpenseSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
+    category_name = serializers.ReadOnlyField(source='category.name')
     class Meta:
         model = Expense
-        fields = ['id', 'amount', 'date', 'category', 'description', 'owner']
+        fields = ['id', 'amount', 'date', 'category', 'category_name', 'description', 'owner']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

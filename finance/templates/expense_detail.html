@@ -1,0 +1,7 @@
+{% extends 'home.html' %}
+{% block navigator %}
+<h2>Expense</h2>
+<p>{{ expense.date }} — {{ expense.category.name }} — €{{ expense.amount }}</p>
+<p>{{ expense.description }}</p>
+<a href="{% url 'expenses' %}">Back</a>
+{% endblock %}
