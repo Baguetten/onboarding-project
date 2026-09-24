@@ -8,11 +8,10 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ['id', 'name', 'owner']
     def validate_name(self, value):
-        print(len(value.strip()))
-        if not value:
-            raise serializers.ValidationError("Category name cannot be empty.")
-        elif len(value.strip()) < 3:
+        if len(value.strip()) < 3:
             raise serializers.ValidationError("Category name must be at least 3 characters long.")
+        elif Category.objects.filter(owner=self.context['request'].user, name__iexact=value).exists():
+            raise serializers.ValidationError("A category with this name already exists.")
         return value
 
 class ExpenseSerializer(serializers.ModelSerializer):
@@ -27,6 +26,11 @@ class ExpenseSerializer(serializers.ModelSerializer):
         if request:
             self.fields['category'].queryset = Category.objects.filter(owner=request.user)
 
+    def validate(self, data):
+       if data.get('amount', 0) > 50 and data.get('description', '') == '':
+           raise serializers.ValidationError("Description is required for expenses over 50.")
+       return data
+
     def validate_category(self, value):
         if value.owner != self.context['request'].user:
             raise serializers.ValidationError("You can only assign expenses to your own categories.")   
@@ -38,7 +42,7 @@ class ExpenseSerializer(serializers.ModelSerializer):
         return value
 
     def validate_description(self, value):
-        if len(value.strip()) < 3:
+        if 0 < len(value.strip()) < 3: #Allows empty descriptions but requires at least 3 characters if provided
             raise serializers.ValidationError("Description must be at least 3 characters long.")
         return value
 
