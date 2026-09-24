@@ -1,0 +1,18 @@
+{% extends 'home.html' %}
+{% block navigator %}
+<h2>Incomes</h2>
+{% for income in incomes %}
+    <p>{{ income.date }} — €{{ income.amount }}</a></p>
+{% endfor %}
+<h2>Add Income</h2>
+<form method="post">
+    {% csrf_token %}
+    Amount
+    <input type="number" name="amount" step="0.01" required>
+    Date
+    <input type="date" name="date" required>    
+    <button type="submit">Add income</button>
+</form>
+{% for field, messages in errors.items %}{% for m in messages %}<p class="error">{{ m }}</p>{% endfor %}{% endfor %}
+
+{% endblock %}

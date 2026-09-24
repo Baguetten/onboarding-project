@@ -9,7 +9,7 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('expenses/', views.ExpenseListCreateView.as_view(), name='expenses'),
     path('expenses/<int:pk>/', views.ExpenseDetailView.as_view(), name='expense_detail'),
-    path('incomes/', views.ExpenseListCreateView.as_view(), name='incomes'),
+    path('incomes/', views.IncomeListCreateView.as_view(), name='incomes'),
     path('categories/', views.ExpenseListCreateView.as_view(), name='categories'),
     path('analytics/', views.ExpenseListCreateView.as_view(), name='analytics'),
     path('api/categories/', views.CategoryListCreateAPIView.as_view()),  

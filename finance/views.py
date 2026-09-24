@@ -95,7 +95,7 @@ class ExpenseDetailView(LoginRequiredMixin, View):
     
     def post(self, request, pk):
         if 'delete' in request.POST:
-            res = api_call(request, f'/api/expenses/{pk}/', 'delete')
+            api_call(request, f'/api/expenses/{pk}/', 'delete')
             if res.status_code == 204:
                 return redirect('expenses')
             raise Http404
@@ -113,7 +113,28 @@ class ExpenseDetailView(LoginRequiredMixin, View):
                 'expense': api_call(request, f'/api/expenses/{pk}/').json(),
                 'categories': api_call(request, '/api/categories/').json(),
                 'errors': res.json(),
-            })
+        })
+
+class IncomeListCreateView(LoginRequiredMixin, View):
+    template_name = 'incomes.html'
+    
+    def get(self, request):
+        res = api_call(request, '/api/incomes')
+        if res.status_code == 404:
+            raise Http404
+        return render(request, self.template_name, {'incomes': res.json()})
+
+    def post(self, request):
+        res = api_call(request, '/api/incomes/', 'post', data={
+            'amount': request.POST['amount'],
+            'date': request.POST['date'],
+        })
+        if res.status_code == 201:
+            return redirect('incomes')
+        return render(request, self.template_name, {
+            'incomes': api_call(request, '/api/incomes/').json(),
+            'errors': res.json(),
+        })
     
 class CategoryListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
