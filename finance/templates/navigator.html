@@ -1,15 +1,16 @@
 {% extends 'base.html' %}
 {% block content %}
+{% block navigator %}
     <nav>
         <ul>
             <li><a href="{% url 'expenses' %}">Expenses</a></li>
             <li><a href="{% url 'incomes' %}">Incomes</a></li>
             <li><a href="{% url 'categories' %}">Categories</a></li>
             <li><a href="{% url 'analytics' %}">Analytics</a></li>
-            <li><a>{{ user.username }}</a></li>
+            <li><p>Hello, {{ user.username }}!</p></li>
             <li><a href="{% url 'logout' %}">Logout</a></li>
         </ul>
     </nav>
-{% block navigator %}
+    <h1>Welcome to the Finance App</h1>
 {% endblock %}
 {% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'home.html' %}
+{% block navigator %}
+<h2>Expenses</h2>
+{% for expense in expenses %}
+    <p>{{ expense.date }} — {{ expense.category.name }} — €{{ expense.amount }} — {{ expense.description }}</p>
+{% endfor %}
+<h2>Add expense</h2>
+<form method="post">
+    {% csrf_token %}
+    Amount
+    <input type="number" name="amount" step="0.01" value="{{ data.amount }}" required>
+    {% for e in errors.amount %}<p class="error">{{ e }}</p>{% endfor %}
+    Category
+    <select name="category">
+        {% for category in categories %}
+            <option value="{{ category.id }}" {% if data.category == category.id|stringformat:"s" %}selected{% endif %}>{{ category.name }}</option>
+        {% endfor %}
+    </select>
+    Date
+    <input type="date" name="date" value="{{ data.date }}" required>    
+    Description
+    <input type="text" name="description" value="{{ data.description }}">
+    <button type="submit">Add expense</button>
+</form>
+{% for field, messages in errors.items %}{% for m in messages %}<p class="error">{{ m }}</p>{% endfor %}{% endfor %}
+
+{% endblock %}
