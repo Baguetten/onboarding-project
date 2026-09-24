@@ -7,10 +7,14 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('create_account/', views.create_account, name='create_account'),
     path('logout/', views.logout_view, name='logout'),
-    path('categories/', views.CategoryListCreateView.as_view()),  
-    path('expenses/', views.ExpenseListCreateView.as_view()),  
-    path('expenses/<int:pk>/', views.ExpenseDetailView.as_view()),  
-    path('incomes/', views.IncomeListCreateView.as_view()),  
+    path('expenses/', views.ExpenseListCreateView.as_view(), name='expenses'),
+    path('incomes/', views.ExpenseListCreateView.as_view(), name='incomes'),
+    path('categories/', views.ExpenseListCreateView.as_view(), name='categories'),
+    path('analytics/', views.ExpenseListCreateView.as_view(), name='analytics'),
+    path('api/categories/', views.CategoryListCreateAPIView.as_view()),  
+    path('api/expenses/', views.ExpenseListCreateAPIView.as_view()),  
+    path('api/expenses/<int:pk>/', views.ExpenseDetailAPIView.as_view()),  
+    path('api/incomes/', views.IncomeListCreateAPIView.as_view()),  
 ]
 
 urlpatterns += [
