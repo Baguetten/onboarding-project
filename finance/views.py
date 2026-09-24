@@ -11,6 +11,7 @@ from rest_framework import generics, permissions
 from .permissions import IsOwner
 from django.contrib.auth.mixins import LoginRequiredMixin
 import requests
+from django.http import Http404
 
 def api_call(request, path, method='get', **kwargs):
     token = Token.objects.get(user=request.user).key
@@ -80,12 +81,39 @@ class ExpenseListCreateView(LoginRequiredMixin, View):
             'categories': api_call(request, '/api/categories/').json(),
         }
 
-class ExpenseDetailPageView(LoginRequiredMixin, View):
-    template_name = 'expense_detail.html'
+class ExpenseDetailView(LoginRequiredMixin, View):
+    template_name = "expense_detail.html"
 
     def get(self, request, pk):
-        expense = get_object_or_404(Expense, pk=pk, owner=request.user)
-        return render(request, self.template_name, {'expense': expense})
+        res = api_call(request, f'/api/expenses/{pk}/')
+        if res.status_code == 404:
+            raise Http404
+        return render(request, self.template_name, {
+            'expense': res.json(), 
+            'categories': api_call(request, '/api/categories/').json()
+        })
+    
+    def post(self, request, pk):
+        if 'delete' in request.POST:
+            res = api_call(request, f'/api/expenses/{pk}/', 'delete')
+            if res.status_code == 204:
+                return redirect('expenses')
+            raise Http404
+
+        else:  
+            res = api_call(request, f'/api/expenses/{pk}/', 'put', data={
+                'amount': request.POST['amount'],
+                'category': request.POST['category'],
+                'date': request.POST['date'],
+                'description': request.POST['description'],
+            })
+            if res.status_code == 200:
+                return redirect('expense_detail', pk=pk)
+            return render(request, self.template_name, {
+                'expense': api_call(request, f'/api/expenses/{pk}/').json(),
+                'categories': api_call(request, '/api/categories/').json(),
+                'errors': res.json(),
+            })
     
 class CategoryListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]

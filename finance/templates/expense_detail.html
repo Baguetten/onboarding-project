@@ -1,7 +1,26 @@
 {% extends 'home.html' %}
 {% block navigator %}
 <h2>Expense</h2>
-<p>{{ expense.date }} — {{ expense.category.name }} — €{{ expense.amount }}</p>
+<p>{{ expense.date }} — {{ expense.category_name }} — €{{ expense.amount }}</p>
 <p>{{ expense.description }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    Amount
+    <input type="number" value="{{expense.amount}}" name="amount" step="0.01" value="{{ data.amount }}" required>
+    Category
+    <select name="category">
+        {% for category in categories %}
+            <option value="{{ category.id }}">{{ category.name }}</option>
+        {% endfor %}
+    </select>
+    Date
+    <input type="date" name="date" value="{{ expense.date }}" required> 
+    <input type="text" name="description" value="{{ expense.description }}">
+    <button type="submit">Save</button> 
+    <button type="submit" name="delete" formnovalidate>Delete</button>
+</form>
+{% for field, messages in errors.items %}{% for m in messages %}<p class="error">{{ m }}</p>{% endfor %}{% endfor %}
+
 <a href="{% url 'expenses' %}">Back</a>
 {% endblock %}
