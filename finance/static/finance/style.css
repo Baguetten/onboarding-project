@@ -203,30 +203,25 @@ button[name="delete"]:hover {
     color: var(--danger-dark);
 }
 
-/* ---------- Lists of records (expenses, incomes, categories) ---------- */
-.records p {
-    margin: 0.5rem 0;
-    padding: 0.75rem 1rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
+/* ---------- Row highlight and links inside tables ---------- */
+tbody tr:hover {
+    background: #f8fafc;
 }
 
-/* Expense rows are links: make the whole box clickable and react on hover */
-.records p a {
-    display: block;
-    margin: -0.75rem -1rem;
-    padding: 0.75rem 1rem;
-    color: var(--text);
+td a {
+    font-weight: 600;
 }
 
-.records p a:hover {
-    text-decoration: none;
-    color: var(--primary);
+/* Whole-row links: the link in the row stretches over the entire row */
+.clickable-rows tbody tr {
+    position: relative;
+    cursor: pointer;
 }
 
-.records p:has(a):hover {
-    border-color: var(--primary);
+.clickable-rows td a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
 }
 
 .pagination {

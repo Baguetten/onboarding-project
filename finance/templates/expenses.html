@@ -1,11 +1,25 @@
 {% extends 'home.html' %}
 {% block page_content %}
 <h2>Expenses</h2>
-<div class="records">
-{% for expense in expenses %}
-    <p><a href="{% url 'expense_detail' expense.id %}">{{ expense.date }} — {{ expense.category_name }} — €{{ expense.amount }} — {{ expense.description }}</a></p>
-{% endfor %}
-</div>
+{% if expenses %}
+<table class="clickable-rows">
+    <thead>
+        <tr><th>Date</th><th>Category</th><th>Amount</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+        {% for expense in expenses %}
+        <tr>
+            <td><a href="{% url 'expense_detail' expense.id %}">{{ expense.date }}</a></td>
+            <td>{{ expense.category_name }}</td>
+            <td>€{{ expense.amount }}</td>
+            <td>{{ expense.description }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No expenses yet.</p>
+{% endif %}
 {% if has_previous or has_next %}
 <div class="pagination">
     {% if has_previous %}<a href="?page={{ current_page|add:"-1" }}">&larr; Previous</a>{% else %}<span class="disabled">&larr; Previous</span>{% endif %}
