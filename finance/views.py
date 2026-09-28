@@ -1,7 +1,7 @@
 from django.views import View
 from rest_framework.authtoken.models import Token
 
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -12,6 +12,7 @@ from .permissions import IsOwner
 from django.contrib.auth.mixins import LoginRequiredMixin
 import requests
 from django.http import Http404
+from django.utils.timezone import localdate
 
 def api_call(request, path, method='get', **kwargs):
     token = Token.objects.get(user=request.user).key
@@ -76,6 +77,10 @@ class ExpenseListCreateView(LoginRequiredMixin, View):
         return render(request, self.template_name, {**self.context(request), 'errors': res.json()})
 
     def context(self, request):
+        expenses_res =  api_call(request, '/api/expenses/').json()
+        categories_res = api_call(request, '/api/categories/').json()
+        if expenses_res.status_code == 404 or categories_res.status_code == 404:
+            raise Http404
         return {
             'expenses': api_call(request, '/api/expenses/').json(),
             'categories': api_call(request, '/api/categories/').json(),
@@ -95,11 +100,11 @@ class ExpenseDetailView(LoginRequiredMixin, View):
     
     def post(self, request, pk):
         if 'delete' in request.POST:
-            api_call(request, f'/api/expenses/{pk}/', 'delete')
+            res = api_call(request, f'/api/expenses/{pk}/', 'delete')
             if res.status_code == 204:
                 return redirect('expenses')
-            raise Http404
-
+            else:
+                raise Http404
         else:  
             res = api_call(request, f'/api/expenses/{pk}/', 'put', data={
                 'amount': request.POST['amount'],
@@ -135,7 +140,71 @@ class IncomeListCreateView(LoginRequiredMixin, View):
             'incomes': api_call(request, '/api/incomes/').json(),
             'errors': res.json(),
         })
+
+class CategoryListCreateView(LoginRequiredMixin, View):
+    template_name = 'categories.html'
+    def get(self, request):
+        res = api_call(request, '/api/categories')
+        if res.status_code == 404:
+            raise Http404
+        return render(request, self.template_name, {'categories': res.json()})
+
+    def post(self, request):
+        res = api_call(request, '/api/categories/', 'post', data={
+            'name': request.POST['name'],
+        })
+        if res.status_code == 201:
+            return redirect('categories')
+        return render(request, self.template_name, {
+            'categories': api_call(request, '/api/categories/').json(),
+            'errors': res.json(),
+        })
+class AnalyticsView(LoginRequiredMixin, View):
+    template_name = 'analytics.html'
+
+    def get(self, request):
+        return render(request, self.template_name, self.context(request))
+
+    def post(self, request):
+        context = self.context(
+            request,
+            selected_month=request.POST['month'],
+            selected_category=int(request.POST['category']),
+        )
+        return render(request, self.template_name, context)
+
+    def context(self, request, selected_month=None, selected_category=None):
+        expenses_res = api_call(request, '/api/expenses/')
+        incomes_res = api_call(request, '/api/incomes/')
+        categories_res = api_call(request, '/api/categories/')
+        if expenses_res.status_code == 404 or incomes_res.status_code == 404 or categories_res.status_code == 404:
+            raise Http404
     
+        expenses = expenses_res.json()
+        incomes = incomes_res.json()
+        categories = categories_res.json()
+        total_expenses = sum(float(e['amount']) for e in expenses)
+        total_income = sum(float(i['amount']) for i in incomes)
+    
+        if selected_month is None:
+            selected_month = localdate().strftime('%Y-%m')
+        if selected_category is None:
+            selected_category = categories[0]['id'] if categories else None
+    
+        filtered_expenses = [
+            e for e in expenses
+            if e['date'].startswith(selected_month) and e['category'] == selected_category
+        ]
+        return {
+            'expenses': filtered_expenses,
+            'categories': categories,
+            'selected_month': selected_month,
+            'selected_category': selected_category,
+            'total_income': total_income,
+            'total_expenses': total_expenses,
+            'balance': total_income - total_expenses,
+        }
+
 class CategoryListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = CategorySerializer

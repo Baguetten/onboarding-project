@@ -1,0 +1,16 @@
+{% extends 'home.html' %}
+{% block navigator %}
+<h2>Categories</h2>
+{% for category in categories %}
+    <p>{{ category.name }}</a></p>
+{% endfor %}
+<h2>Add Category</h2>
+<form method="post">
+    {% csrf_token %}
+    Category
+    <input type="text" name="name" required>   
+    <button type="submit">Add category</button>
+</form>
+{% for field, messages in errors.items %}{% for m in messages %}<p class="error">{{ m }}</p>{% endfor %}{% endfor %}
+
+{% endblock %}
