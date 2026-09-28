@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% block navigator %}
+    <nav>
+        <ul>
+            <li><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="{% url 'expenses' %}">Expenses</a></li>
+            <li><a href="{% url 'incomes' %}">Incomes</a></li>
+            <li><a href="{% url 'categories' %}">Categories</a></li>
+            <li><a href="{% url 'analytics' %}">Analytics</a></li>
+            <li><a>{{ user.username }}</a></li>
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+        </ul>
+    </nav>
+    {% endblock %}
+
+{% block page_content %}
+    <h1>Welcome, {{ user.username }}!</h1>
+    <p class="welcome-hint">Use the menu above to switch page, or jump straight to a section:</p>
+    <div class="quick-links">
+        <a href="{% url 'expenses' %}">Expenses<span>Track what you spend</span></a>
+        <a href="{% url 'incomes' %}">Incomes<span>Record what you earn</span></a>
+        <a href="{% url 'categories' %}">Categories<span>Organise your expenses</span></a>
+        <a href="{% url 'analytics' %}">Analytics<span>See your monthly balance</span></a>
+    </div>
+{% endblock %}
+{% endblock %}

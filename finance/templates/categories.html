@@ -1,0 +1,29 @@
+{% extends 'home.html' %}
+{% block page_content %}
+<h2>Categories</h2>
+{% if categories %}
+<table>
+    <thead>
+        <tr><th>Name</th></tr>
+    </thead>
+    <tbody>
+        {% for category in categories %}
+        <tr>
+            <td>{{ category.name }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>No categories yet.</p>
+{% endif %}
+<h2>Add Category</h2>
+<form method="post">
+    {% csrf_token %}
+    Category
+    <input type="text" name="name" required>   
+    <button type="submit">Add category</button>
+</form>
+{% for field, messages in errors.items %}{% for m in messages %}<p class="error">{{ m }}</p>{% endfor %}{% endfor %}
+
+{% endblock %}
