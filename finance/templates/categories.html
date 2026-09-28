@@ -1,9 +1,11 @@
 {% extends 'home.html' %}
-{% block navigator %}
+{% block page_content %}
 <h2>Categories</h2>
+<div class="records">
 {% for category in categories %}
-    <p>{{ category.name }}</a></p>
+    <p>{{ category.name }}</p>
 {% endfor %}
+</div>
 <h2>Add Category</h2>
 <form method="post">
     {% csrf_token %}

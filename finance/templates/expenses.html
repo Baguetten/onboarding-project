@@ -1,33 +1,48 @@
 {% extends 'home.html' %}
-{% block navigator %}
+{% block page_content %}
 <h2>Expenses</h2>
+<div class="records">
 {% for expense in expenses %}
     <p><a href="{% url 'expense_detail' expense.id %}">{{ expense.date }} — {{ expense.category_name }} — €{{ expense.amount }} — {{ expense.description }}</a></p>
 {% endfor %}
-<div class="pagination">
-    {% if has_previous %}<a href="?page={{ current_page|add:"-1" }}">Previous</a>{% endif %}
-    {% if has_next %}<a href="?page={{ current_page|add:"1" }}">Next</a>{% endif %}
 </div>
+{% if has_previous or has_next %}
+<div class="pagination">
+    {% if has_previous %}<a href="?page={{ current_page|add:"-1" }}">&larr; Previous</a>{% else %}<span class="disabled">&larr; Previous</span>{% endif %}
+    <span class="page-indicator">Page {{ current_page }}</span>
+    {% if has_next %}<a href="?page={{ current_page|add:"1" }}">Next &rarr;</a>{% else %}<span class="disabled">Next &rarr;</span>{% endif %}
+</div>
+{% endif %}
 
 <h2>Add expense</h2>
 {% if categories %}
-<form method="post">
+{% for field, messages in errors.items %}{% for m in messages %}<p class="error">{{ field }}: {{ m }}</p>{% endfor %}{% endfor %}
+<form method="post" class="form-grid">
     {% csrf_token %}
-    Amount
-    <input type="number" name="amount" step="0.01" required>
-    Category
-    <select name="category">
-        {% for category in categories %}
-            <option value="{{ category.id }}">{{ category.name }}</option>
-        {% endfor %}
-    </select>
-    Date
-    <input type="date" name="date" required>    
-    Description
-    <input type="text" name="description">
-    <button type="submit">Add expense</button>
+    <div class="field">
+        <label for="amount">Amount</label>
+        <input id="amount" type="number" name="amount" step="0.01" required>
+    </div>
+    <div class="field">
+        <label for="category">Category</label>
+        <select id="category" name="category">
+            {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="field">
+        <label for="date">Date</label>
+        <input id="date" type="date" name="date" required>
+    </div>
+    <div class="field">
+        <label for="description">Description</label>
+        <input id="description" type="text" name="description">
+    </div>
+    <div class="actions">
+        <button type="submit">Add expense</button>
+    </div>
 </form>
-{% for field, messages in errors.items %}{% for m in messages %}<p class="error">{{ m }}</p>{% endfor %}{% endfor %}
 {% else %}
 <p>You need a category first. <a href="{% url 'categories' %}">Create one</a>.</p>
 {% endif %}

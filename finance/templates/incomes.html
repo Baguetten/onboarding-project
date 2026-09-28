@@ -1,9 +1,11 @@
 {% extends 'home.html' %}
-{% block navigator %}
+{% block page_content %}
 <h2>Incomes</h2>
+<div class="records">
 {% for income in incomes %}
-    <p>{{ income.date }} — €{{ income.amount }}</a></p>
+    <p>{{ income.date }} — €{{ income.amount }}</p>
 {% endfor %}
+</div>
 <h2>Add Income</h2>
 <form method="post">
     {% csrf_token %}
