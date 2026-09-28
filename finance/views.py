@@ -1,6 +1,6 @@
 from django.views import View
 from rest_framework.authtoken.models import Token
-
+from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -77,13 +77,18 @@ class ExpenseListCreateView(LoginRequiredMixin, View):
         return render(request, self.template_name, {**self.context(request), 'errors': res.json()})
 
     def context(self, request):
-        expenses_res =  api_call(request, '/api/expenses/').json()
-        categories_res = api_call(request, '/api/categories/').json()
+        current_page = int(request.GET.get('page', 1))
+        expenses_res =  api_call(request, '/api/expenses/', params={'page': current_page})
+        categories_res = api_call(request, '/api/categories/')
         if expenses_res.status_code == 404 or categories_res.status_code == 404:
             raise Http404
+        expenses_data = expenses_res.json()
         return {
-            'expenses': api_call(request, '/api/expenses/').json(),
-            'categories': api_call(request, '/api/categories/').json(),
+            'expenses': expenses_data['results'],
+            'categories': categories_res.json(),
+            'current_page': current_page,
+            'has_next': expenses_data['next'] is not None,
+            'has_previous': expenses_data['previous'] is not None,
         }
 
 class ExpenseDetailView(LoginRequiredMixin, View):
@@ -174,13 +179,13 @@ class AnalyticsView(LoginRequiredMixin, View):
         return render(request, self.template_name, context)
 
     def context(self, request, selected_month=None, selected_category=None):
-        expenses_res = api_call(request, '/api/expenses/')
+        expenses_res = api_call(request, '/api/expenses/', params={'page_size': 1000})
         incomes_res = api_call(request, '/api/incomes/')
         categories_res = api_call(request, '/api/categories/')
         if expenses_res.status_code == 404 or incomes_res.status_code == 404 or categories_res.status_code == 404:
             raise Http404
     
-        expenses = expenses_res.json()
+        expenses = expenses_res.json()['results']
         incomes = incomes_res.json()
         categories = categories_res.json()
         total_expenses = sum(float(e['amount']) for e in expenses)
@@ -214,9 +219,15 @@ class CategoryListCreateAPIView(generics.ListCreateAPIView):
     def get_queryset(self):
         return Category.objects.filter(owner=self.request.user)
 
+class ExpensePagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 1000
+
 class ExpenseListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ExpenseSerializer
+    pagination_class = ExpensePagination
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
     def get_queryset(self):
