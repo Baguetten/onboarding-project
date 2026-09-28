@@ -10,6 +10,7 @@
 </div>
 
 <h2>Add expense</h2>
+{% if categories %}
 <form method="post">
     {% csrf_token %}
     Amount
@@ -27,5 +28,8 @@
     <button type="submit">Add expense</button>
 </form>
 {% for field, messages in errors.items %}{% for m in messages %}<p class="error">{{ m }}</p>{% endfor %}{% endfor %}
+{% else %}
+<p>You need a category first. <a href="{% url 'categories' %}">Create one</a>.</p>
+{% endif %}
 
 {% endblock %}
