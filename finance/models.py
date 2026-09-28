@@ -6,6 +6,7 @@ class Category(models.Model):
     owner = models.ForeignKey('auth.User', on_delete=models.CASCADE)
     class Meta:
         unique_together = ('owner', 'name')
+        ordering = ['name']
     def __str__(self):
         return self.name
 
@@ -13,6 +14,8 @@ class Income(models.Model):
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField(default=timezone.now)
     owner = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    class Meta:
+        ordering = ['-date', '-id']
 
 
 class Expense(models.Model):
@@ -21,4 +24,6 @@ class Expense(models.Model):
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
     description = models.TextField(max_length=200, blank=True)
     owner = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    class Meta: 
+        ordering = ['-date', '-id']
 
